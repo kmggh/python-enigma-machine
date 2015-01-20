@@ -1,7 +1,7 @@
 Enigma
 ======
 
-Ken Guyton
+Ken Guyton<br />
 Fri 2015-01-16 00:46:34 -0500
 
 
@@ -20,8 +20,22 @@ This is the first "serious" project for which I've used Git as the
 only version control system.
 
 
-Operation
----------
+To Run The Example
+------------------
+
+    ./enigma_machine.py
+
+Then enter input and press Enter.  Enter Control-D (^D) to end.  This
+example works best for short phrases and echoes the converted input
+before the encrypted line.
+
+If the first write that echoes the input is removed, you can encrypt
+an entire file from stdin and even pipe it into a second
+enigma_machine to decrypt it.
+
+
+Operation Notes
+---------------
 
 map: EKMF
 
