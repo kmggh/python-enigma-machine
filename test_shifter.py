@@ -20,6 +20,7 @@ class TestRotorshifter(unittest.TestCase):
     self.assertEqual(self.rotor_shifter.shift, 0)
     self.assertEqual(self.rotor_shifter.next_shifter, self.rotor_shifter2)
     self.assertEqual(self.rotor_shifter.turnover, 25)
+    self.assertFalse(self.rotor_shifter.double_step)
 
   def test_init_with_shift_turnover(self):
     self.rotor_shifter = enigma.RotorShifter(rotor_map=self.rotor_map,
@@ -88,6 +89,38 @@ class TestRotorshifter(unittest.TestCase):
     self.rotor_shifter.step()
     self.assertEqual(self.rotor_shifter.reverse_flow('K'), 'A')
     self.assertEqual(self.rotor_shifter.reverse_flow('D'), 'B')
+
+  def _shift_positions(self, rs1, rs2, rs3):
+    """Return the shift positions of the three rotors I-II-III as a str."""
+
+    num_to_letter = rs1.rotor_map.num_to_letter
+    return ''.join([num_to_letter(rs.shift) for rs in rs1, rs2, rs3])
+
+  def test_double_step_sequence(self):
+    rotor_map1 = enigma.RotorMap(enigma.ENIGMA_I_1930)
+    rotor_map2 = enigma.RotorMap(enigma.ENIGMA_II_1930)
+    rotor_map3 = enigma.RotorMap(enigma.ENIGMA_III_1930)
+
+    rs1 = enigma.RotorShifter(rotor_map1, turnover_letter='Q',
+                                         shift_letter='A')
+    rs2 = enigma.RotorShifter(rotor_map2, next_shifter=rs1,
+                                         turnover_letter='E', shift_letter='D')
+    rs3 = enigma.RotorShifter(rotor_map3, next_shifter=rs2,
+                                         turnover_letter='V', shift_letter='U')
+
+    rs2.double_step = True
+
+    self.assertEqual(self._shift_positions(rs1, rs2, rs3), 'ADU')
+    rs3.step()
+    self.assertEqual(self._shift_positions(rs1, rs2, rs3), 'ADV')
+    rs3.step()
+    self.assertEqual(self._shift_positions(rs1, rs2, rs3), 'AEW')
+
+    # Now the middle rotor double-steps.
+    rs3.step()
+    self.assertEqual(self._shift_positions(rs1, rs2, rs3), 'BFX')
+    rs3.step()
+    self.assertEqual(self._shift_positions(rs1, rs2, rs3), 'BFY')
 
 
 if __name__ == '__main__':

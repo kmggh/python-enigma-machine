@@ -28,7 +28,9 @@ def create_machine():
   rotor_shifter3 = enigma.RotorShifter(
       rotor_map3, next_shifter=rotor_shifter2, turnover_letter='V')
 
-  reflector = enigma.Reflector(enigma.REFLECTOR_A)
+  rotor_shifter2.double_step = True
+
+  reflector = enigma.Reflector(enigma.REFLECTOR_B)
   plugboard = enigma.PlugBoard(PLUGBOARD_CONFIG)
 
   machine = enigma.Machine(rotor1=rotor_shifter1,

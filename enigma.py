@@ -141,6 +141,11 @@ class RotorShifter(object):
     The turnover is the position in this rotor where the next rotor
     will be stepped.
 
+    The double_step property is a bool that indicates whether this rotor
+    should do a double shift.  That means when it get's a step() call
+    it send a step() to it's next_shifter before *and after* it steps
+    itself.
+
     Args:
       rotor_map: RotorMap.
       next_shifter: RotorShifter.  The shifter for the next rotor in the
@@ -152,6 +157,7 @@ class RotorShifter(object):
     self.next_shifter = next_shifter
     self.shift = rotor_map.letter_to_num(shift_letter)
     self.turnover = rotor_map.letter_to_num(turnover_letter)
+    self.double_step = False
 
   def increment_letter_by_shift(self, letter):
     """Step a letter by the shift amount and wrap around Z."""
@@ -213,9 +219,18 @@ class RotorShifter(object):
     self.shift = self.rotor_map.letter_to_num(letter)
 
   def step(self):
-    """Increment the shift by one.  At Z it rotates to A."""
+    """Increment the shift by one.  At Z it rotates to A.
+
+    When double_step is True for the next rotor, and when we've
+    just finished stepping the next rotor on the previous step,
+    we send a second step() to it this time.
+    """
 
     if self.next_shifter and self.shift == self.turnover:
+      self.next_shifter.step()
+
+    if (self.next_shifter and self.next_shifter.double_step and
+        self.shift == self.turnover + 1):
       self.next_shifter.step()
 
     self.shift = (self.shift + 1) % 26
@@ -247,7 +262,11 @@ class Reflector(RotorMap):
 
 
 class PlugBoard(RotorMap):
-  """The reflector at the end of the rotor sequence."""
+  """Emulate the plug board that's at the beginning and end of the machine.
+
+  The plug board allows swapping pairs of letters just before the rotors
+  and reflector, and just after.  Typically up to 10 pairs were swapped.
+  """
 
   def __init__(self, config):
     """Initialize the plugboard with a config tuple.
